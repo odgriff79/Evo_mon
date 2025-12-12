@@ -1,0 +1,36 @@
+[Unit]
+Description=Evohome HR92 Monitor - Monitoring, alerting, and forensic analysis
+Documentation=https://github.com/yourusername/evohome-monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/evohome-monitor
+Environment="PATH=/home/ubuntu/evohome-monitor/venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Main process
+ExecStart=/home/ubuntu/evohome-monitor/venv/bin/python main.py
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/evohome-monitor/data
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=evohome-monitor
+
+[Install]
+WantedBy=multi-user.target

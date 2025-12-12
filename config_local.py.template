@@ -1,0 +1,64 @@
+"""
+Evohome HR92 Monitor - Local Configuration Template
+
+Copy this file to config_local.py and fill in your credentials:
+    cp config_local.py.template config_local.py
+    nano config_local.py
+
+This file is gitignored so your credentials stay private.
+"""
+
+# =============================================================================
+# EVOHOME CREDENTIALS (Required)
+# =============================================================================
+# Your Total Connect Comfort / Resideo account
+# This is the same login you use for the Evohome app
+EVOHOME_USERNAME = "your_email@example.com"
+EVOHOME_PASSWORD = "your_password"
+
+
+# =============================================================================
+# TELEGRAM NOTIFICATIONS (Recommended)
+# =============================================================================
+# To set up Telegram:
+# 1. Message @BotFather on Telegram
+# 2. Send /newbot and follow prompts
+# 3. Copy the token below
+# 4. Start a chat with your bot
+# 5. Visit https://api.telegram.org/bot<TOKEN>/getUpdates
+# 6. Find your chat ID in the response
+
+TELEGRAM_ENABLED = True
+TELEGRAM_BOT_TOKEN = ""  # e.g., "123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+TELEGRAM_CHAT_ID = ""    # e.g., "987654321"
+
+
+# =============================================================================
+# OPTIONAL CUSTOMIZATIONS
+# =============================================================================
+# Uncomment and modify any settings you want to change from defaults
+
+# Poll interval (seconds) - don't go below 300 to avoid rate limiting
+# POLL_INTERVAL_SECONDS = 300
+
+# Alert on ALL overrides (True) or only suspicious temps (False)
+# ALERT_ON_ALL_OVERRIDES = True
+
+# Temperatures considered suspicious (known firmware bug values)
+# SUSPICIOUS_TEMPS = [35.0, 5.0]
+
+# Minimum time between alerts for the same zone (seconds)
+# ALERT_COOLDOWN_SECONDS = 1800  # 30 minutes
+
+# Quiet hours - no notifications during sleep
+# QUIET_HOURS_ENABLED = True
+# QUIET_HOURS_START = 23  # 11 PM
+# QUIET_HOURS_END = 7     # 7 AM
+
+# How long to keep forensic data (days)
+# LOG_RETENTION_DAYS = 90
+
+# Web dashboard settings
+# WEB_ENABLED = True
+# WEB_HOST = "0.0.0.0"  # Use "127.0.0.1" to restrict to localhost only
+# WEB_PORT = 8080

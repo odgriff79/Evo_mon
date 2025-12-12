@@ -1,0 +1,17 @@
+# Evohome HR92 Monitor - Dependencies
+
+# Evohome API client
+evohomeasync2>=0.4.0
+
+# Web framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+
+# HTTP client (for notifications)
+requests>=2.28.0
+
+# Templating
+jinja2>=3.1.0
+
+# Async support
+aiohttp>=3.8.0
