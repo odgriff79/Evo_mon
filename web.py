@@ -52,7 +52,7 @@ DASHBOARD_HTML = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Evohome HR92 Monitor</title>
     <meta http-equiv="refresh" content="60">
     <style>
@@ -72,269 +72,424 @@ DASHBOARD_HTML = """
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-dark);
             color: var(--text);
-            padding: 20px;
+            padding: 15px;
             min-height: 100vh;
         }
+
+        /* Header - mobile first */
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--accent);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
         }
-        h1 { font-size: 1.8em; font-weight: 600; }
+        h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
         .status-badge {
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 20px;
-            font-size: 0.85em;
+            font-size: 0.9em;
             font-weight: 500;
+            display: inline-block;
+            width: fit-content;
         }
         .status-ok { background: var(--success); color: #000; }
         .status-warning { background: var(--warning); color: #000; }
-        .status-error { background: var(--danger); color: #fff; }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .zone-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--accent);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .zone-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-        .zone-card.override {
-            border-color: var(--danger);
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.2);
-        }
-        .zone-name {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .zone-mode {
-            font-size: 0.7em;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-        .mode-schedule { background: var(--success); color: #000; }
-        .mode-override { background: var(--danger); color: #fff; }
-        .mode-permanent { background: var(--warning); color: #000; }
-        
-        .temps {
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin: 15px 0;
-        }
-        .temp-block label {
-            display: block;
-            font-size: 0.75em;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .temp-value {
-            font-size: 2em;
-            font-weight: 300;
-        }
-        .temp-value.current { color: var(--info); }
-        .temp-value.target { color: var(--warning); }
-        
-        .section {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 1px solid var(--accent);
-        }
-        .section h2 {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--accent);
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--accent);
-        }
-        th {
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        tr:hover { background: rgba(255,255,255,0.03); }
-        
         .timestamp {
             color: var(--text-muted);
             font-size: 0.85em;
         }
+
+        /* Navigation - mobile optimized */
         .nav-links {
             display: flex;
-            gap: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 20px;
         }
         .nav-links a {
             color: var(--info);
             text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            background: var(--accent);
-            transition: background 0.2s;
-        }
-        .nav-links a:hover { background: #1a4a7a; }
-        
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        .stat-card {
-            text-align: center;
-            padding: 20px;
-            background: var(--accent);
+            padding: 12px 18px;
             border-radius: 8px;
+            background: var(--accent);
+            font-size: 0.9em;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: 300;
-            color: var(--info);
+
+        /* Override Alert Section - Prominent */
+        .override-alert {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
         }
-        .stat-label {
+        .override-alert h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: var(--danger);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .override-count {
+            background: var(--danger);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 0.8em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-top: 5px;
+            font-weight: 600;
         }
-        
-        @media (max-width: 600px) {
-            .header { flex-direction: column; gap: 15px; text-align: center; }
-            .grid { grid-template-columns: 1fr; }
-            .temps { flex-direction: column; gap: 15px; }
+
+        /* Zone Cards - mobile first, larger touch targets */
+        .zone-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 18px;
+            border: 2px solid var(--accent);
+            margin-bottom: 15px;
+        }
+        .zone-card.override {
+            border-color: var(--danger);
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), var(--bg-card));
+        }
+        .zone-card.fault {
+            border-color: var(--warning);
+        }
+        .zone-name {
+            font-size: 1.15em;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .zone-mode {
+            font-size: 0.75em;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        .mode-schedule { background: var(--success); color: #000; }
+        .mode-override { background: var(--danger); color: #fff; }
+        .mode-permanent { background: var(--warning); color: #000; }
+
+        .temps {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .temp-block {
+            flex: 1;
+            text-align: center;
+        }
+        .temp-block label {
+            display: block;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .temp-value {
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        .temp-value.current { color: var(--info); }
+        .temp-value.target { color: var(--warning); }
+        .temp-value.unavailable { color: var(--text-muted); opacity: 0.5; }
+
+        .fault-indicator {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 193, 7, 0.15);
+            border-left: 4px solid var(--warning);
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: var(--warning);
+        }
+        .fault-indicator.offline {
+            background: rgba(255, 107, 107, 0.15);
+            border-left-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* Collapsible Section */
+        .collapsible-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 20px;
+            border: 1px solid var(--accent);
+            overflow: hidden;
+        }
+        .collapsible-header {
+            padding: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 50px;
+            background: var(--accent);
+        }
+        .collapsible-header h2 {
+            font-size: 1.2em;
+            margin: 0;
+        }
+        .toggle-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+        .collapsible-content {
+            padding: 15px;
+            display: none;
+        }
+        .collapsible-content.expanded {
+            display: block;
+        }
+
+        /* Events table - simplified for mobile */
+        .events-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid var(--accent);
+        }
+        .events-section h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--accent);
+        }
+        .event-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--accent);
+        }
+        .event-item:last-child {
+            border-bottom: none;
+        }
+        .event-time {
+            color: var(--text-muted);
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        .event-zone {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        .event-details {
+            font-size: 0.85em;
+            color: var(--text-muted);
+        }
+
+        /* Tablet and Desktop - responsive grid */
+        @media (min-width: 768px) {
+            body { padding: 30px; }
+            h1 { font-size: 2em; }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header-info {
+                flex-direction: row;
+                align-items: center;
+                gap: 20px;
+            }
+            .nav-links {
+                gap: 15px;
+            }
+            .nav-links a {
+                padding: 10px 18px;
+                min-height: auto;
+            }
+
+            /* Grid layout for override cards on desktop */
+            .override-cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 20px;
+            }
+            .override-cards .zone-card {
+                margin-bottom: 0;
+            }
+
+            /* Grid layout for all zones on desktop */
+            .zone-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 20px;
+            }
+            .zone-grid .zone-card {
+                margin-bottom: 0;
+            }
+
+            .collapsible-content {
+                padding: 20px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .zone-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .override-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏠 Evohome HR92 Monitor</h1>
-        <div>
+        <h1>🏠 Evohome Monitor</h1>
+        <div class="header-info">
             <span class="status-badge {{ 'status-ok' if system_mode == 'Auto' else 'status-warning' }}">
                 {{ system_mode or 'Unknown' }}
             </span>
-            <span class="timestamp" style="margin-left: 15px;">
-                Updated: {{ last_update }}
-            </span>
+            <span class="timestamp">Updated: {{ last_update }}</span>
         </div>
     </div>
-    
+
     <div class="nav-links">
         <a href="/">Dashboard</a>
         <a href="/forensics">Forensics</a>
-        <a href="/api/state">API: State</a>
-        <a href="/api/events">API: Events</a>
     </div>
-    
-    <div class="grid">
-        {% for zone in zones %}
-        <div class="zone-card {{ 'override' if zone.is_override else '' }}">
-            <div class="zone-name">
-                {{ zone.name }}
-                <span class="zone-mode {{ 'mode-schedule' if zone.setpoint_mode == 'FollowSchedule' else 'mode-override' if zone.setpoint_mode == 'TemporaryOverride' else 'mode-permanent' }}">
+
+    <!-- Active Overrides Section - Prominent at Top -->
+    {% if active_overrides %}
+    <div class="override-alert">
+        <h2>
+            ⚠️ Active Overrides
+            <span class="override-count">{{ active_overrides|length }}</span>
+        </h2>
+        <div class="override-cards">
+            {% for zone in override_zones %}
+            <div class="zone-card override">
+                <div class="zone-name">{{ zone.name }}</div>
+                <div class="zone-mode {{ 'mode-override' if zone.setpoint_mode == 'TemporaryOverride' else 'mode-permanent' }}">
                     {{ zone.setpoint_mode.replace('Override', ' Override') }}
-                </span>
-            </div>
-            <div class="temps">
-                <div class="temp-block">
-                    <label>Current</label>
-                    <div class="temp-value current">
-                        {{ '%.1f' % zone.current_temp if zone.current_temp else '--' }}°
+                </div>
+                <div class="temps">
+                    <div class="temp-block">
+                        <label>Current</label>
+                        <div class="temp-value current {{ 'unavailable' if not zone.is_available else '' }}">
+                            {{ '%.1f' % zone.current_temp if zone.current_temp else '--' }}°
+                        </div>
+                    </div>
+                    <div class="temp-block">
+                        <label>Target</label>
+                        <div class="temp-value target">{{ '%.1f' % zone.target_temp }}°</div>
                     </div>
                 </div>
-                <div class="temp-block">
-                    <label>Target</label>
-                    <div class="temp-value target">{{ '%.1f' % zone.target_temp }}°</div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    
-    {% if active_overrides %}
-    <div class="section" style="border-color: var(--danger);">
-        <h2>⚠️ Active Overrides</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Zone</th>
-                    <th>Type</th>
-                    <th>Target</th>
-                    <th>Since</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for override in active_overrides %}
-                <tr>
-                    <td>{{ override.name }}</td>
-                    <td>{{ override.mode }}</td>
-                    <td>{{ override.target }}°C</td>
-                    <td class="timestamp">{{ override.since }}</td>
-                </tr>
+                {% if not zone.is_available %}
+                <div class="fault-indicator offline">⚠️ No temperature reading</div>
+                {% endif %}
+                {% for fault in zone.active_faults %}
+                <div class="fault-indicator">🔧 {{ fault }}</div>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
-    
-    <div class="section">
-        <h2>📊 Recent Events (Last 24h)</h2>
-        {% if recent_events %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Zone</th>
-                    <th>Event</th>
-                    <th>Change</th>
-                    <th>Classification</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for event in recent_events %}
-                <tr>
-                    <td class="timestamp">{{ event.time }}</td>
-                    <td>{{ event.zone_name }}</td>
-                    <td>{{ event.event_type }}</td>
-                    <td>{{ event.previous_target }}° → {{ event.new_target }}°</td>
-                    <td>{{ event.override_type or '-' }}</td>
-                </tr>
+
+    <!-- All Zones - Collapsible -->
+    <div class="collapsible-section">
+        <div class="collapsible-header" onclick="toggleSection('allZones')">
+            <h2>📍 All Zones ({{ zones|length }})</h2>
+            <span class="toggle-icon" id="allZones-icon">▼</span>
+        </div>
+        <div class="collapsible-content" id="allZones-content">
+            <div class="zone-grid">
+                {% for zone in zones %}
+                <div class="zone-card {{ 'fault' if zone.has_faults or not zone.is_available else '' }}">
+                    <div class="zone-name">{{ zone.name }}</div>
+                    <div class="zone-mode {{ 'mode-schedule' if zone.setpoint_mode == 'FollowSchedule' else 'mode-override' if zone.setpoint_mode == 'TemporaryOverride' else 'mode-permanent' }}">
+                        {{ zone.setpoint_mode.replace('Override', ' Override') }}
+                    </div>
+                    <div class="temps">
+                        <div class="temp-block">
+                            <label>Current</label>
+                            <div class="temp-value current {{ 'unavailable' if not zone.is_available else '' }}">
+                                {{ '%.1f' % zone.current_temp if zone.current_temp else '--' }}°
+                            </div>
+                        </div>
+                        <div class="temp-block">
+                            <label>Target</label>
+                            <div class="temp-value target">{{ '%.1f' % zone.target_temp }}°</div>
+                        </div>
+                    </div>
+                    {% if not zone.is_available %}
+                    <div class="fault-indicator offline">⚠️ No temperature reading</div>
+                    {% endif %}
+                    {% for fault in zone.active_faults %}
+                    <div class="fault-indicator">🔧 {{ fault }}</div>
+                    {% endfor %}
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p style="color: var(--text-muted);">No events in the last 24 hours.</p>
-        {% endif %}
+            </div>
+        </div>
     </div>
+
+    <!-- Recent Events - Collapsible -->
+    <div class="collapsible-section">
+        <div class="collapsible-header" onclick="toggleSection('events')">
+            <h2>📊 Recent Events (Last 24h)</h2>
+            <span class="toggle-icon" id="events-icon">▼</span>
+        </div>
+        <div class="collapsible-content" id="events-content">
+            {% if recent_events %}
+                {% for event in recent_events %}
+                <div class="event-item">
+                    <div class="event-time">{{ event.time }}</div>
+                    <div class="event-zone">{{ event.zone_name }}</div>
+                    <div class="event-details">
+                        {{ event.event_type }}: {{ event.previous_target }}° → {{ event.new_target }}°
+                        {% if event.override_type %} ({{ event.override_type }}){% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--text-muted);">No events in the last 24 hours.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + '-content');
+            const icon = document.getElementById(sectionId + '-icon');
+
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                icon.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                icon.classList.add('expanded');
+            }
+        }
+
+        // Auto-expand All Zones on desktop, collapsed on mobile
+        if (window.innerWidth >= 768) {
+            document.getElementById('allZones-content').classList.add('expanded');
+            document.getElementById('allZones-icon').classList.add('expanded');
+        }
+    </script>
 </body>
 </html>
 """
@@ -571,34 +726,39 @@ FORENSICS_HTML = """
 async def dashboard(request: Request):
     """Main dashboard page."""
     from jinja2 import Template
-    
+
     zones = []
+    override_zones = []
     active_overrides = []
     system_mode = "Unknown"
     last_update = "Never"
-    
+
     if _current_state:
         system_mode = _current_state.system_mode
         last_update = _current_state.timestamp.strftime("%H:%M:%S")
-        
+
         for zone in _current_state.zones.values():
-            zones.append({
+            zone_data = {
                 "name": zone.name,
                 "current_temp": zone.current_temp,
                 "target_temp": zone.target_temp,
                 "setpoint_mode": zone.setpoint_mode,
                 "is_override": zone.is_override,
-                "is_available": zone.is_available
-            })
-            
+                "is_available": zone.is_available,
+                "active_faults": zone.active_faults,
+                "has_faults": len(zone.active_faults) > 0
+            }
+            zones.append(zone_data)
+
             if zone.is_override:
+                override_zones.append(zone_data)
                 active_overrides.append({
                     "name": zone.name,
                     "mode": zone.setpoint_mode,
                     "target": zone.target_temp,
                     "since": zone.timestamp.strftime("%H:%M")
                 })
-    
+
     # Get recent events
     recent_events = []
     if _forensic_logger:
@@ -612,10 +772,11 @@ async def dashboard(request: Request):
                 "new_target": e["new_target"],
                 "override_type": e.get("override_type", "").replace("_", " ")
             })
-    
+
     template = Template(DASHBOARD_HTML)
     html = template.render(
         zones=sorted(zones, key=lambda z: z["name"]),
+        override_zones=sorted(override_zones, key=lambda z: z["name"]),
         active_overrides=active_overrides,
         recent_events=recent_events,
         system_mode=system_mode,
