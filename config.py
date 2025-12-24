@@ -65,6 +65,8 @@ LOG_RETENTION_DAYS = 90
 WEB_ENABLED = True
 WEB_HOST = "0.0.0.0"
 WEB_PORT = 8080
+# External dashboard URL for notifications (override in config_local.py)
+DASHBOARD_URL = None  # Example: "http://132.145.50.77:8080"
 
 # =============================================================================
 # DEBUGGING

@@ -8,11 +8,11 @@ Wants=network-online.target
 Type=simple
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/home/ubuntu/evohome-monitor
-Environment="PATH=/home/ubuntu/evohome-monitor/venv/bin:/usr/local/bin:/usr/bin:/bin"
+WorkingDirectory=/home/ubuntu/Evo_mon
+Environment="PATH=/home/ubuntu/venv/bin:/usr/local/bin:/usr/bin:/bin"
 
 # Main process
-ExecStart=/home/ubuntu/evohome-monitor/venv/bin/python main.py
+ExecStart=/home/ubuntu/venv/bin/python main.py
 
 # Restart policy
 Restart=always
@@ -24,7 +24,7 @@ StartLimitBurst=3
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/ubuntu/evohome-monitor/data
+ReadWritePaths=/home/ubuntu/Evo_mon/data
 PrivateTmp=true
 
 # Logging

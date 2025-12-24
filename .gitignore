@@ -1,0 +1,10 @@
+# Local config with credentials
+config_local.py
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Data directory (optional - remove this line if you want to backup data)
+data/

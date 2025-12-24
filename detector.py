@@ -59,8 +59,9 @@ class OverrideEvent:
     
     def to_alert_message(self) -> str:
         """Format as a notification message."""
+        import config
         emoji = "🔴" if self.is_suspicious else "🟡"
-        
+
         lines = [
             f"{emoji} Evohome Override Detected",
             f"",
@@ -70,15 +71,21 @@ class OverrideEvent:
             f"Current temp: {self.current_temp}°C" if self.current_temp else "",
             f"Time: {self.timestamp.strftime('%H:%M:%S')}",
         ]
-        
+
         if self.override_type != OverrideType.UNKNOWN:
             lines.append(f"")
             lines.append(f"Likely cause: {self.override_type.value}")
-        
+
         if self.diagnostic_notes:
             lines.append(f"")
             lines.append(f"Notes: {self.diagnostic_notes}")
-        
+
+        # Add dashboard link
+        dashboard_url = getattr(config, 'DASHBOARD_URL', None)
+        if dashboard_url:
+            lines.append(f"")
+            lines.append(f"🔗 <a href='{dashboard_url}'>View Dashboard</a>")
+
         return "\n".join(line for line in lines if line is not None)
     
     def to_dict(self) -> dict:
@@ -117,13 +124,22 @@ class ClearedOverrideEvent:
     
     def to_alert_message(self) -> str:
         """Format as a notification message."""
+        import config
         duration_str = f" (was active {self.override_duration_mins} mins)" if self.override_duration_mins else ""
-        return (
+
+        message = (
             f"🟢 Override Cleared\n\n"
             f"Zone: {self.zone_name}\n"
             f"Returned to: FollowSchedule\n"
             f"Setpoint: {self.previous_target}°C → {self.new_target}°C{duration_str}"
         )
+
+        # Add dashboard link
+        dashboard_url = getattr(config, 'DASHBOARD_URL', None)
+        if dashboard_url:
+            message += f"\n\n🔗 <a href='{dashboard_url}'>View Dashboard</a>"
+
+        return message
 
 
 class OverrideDetector:

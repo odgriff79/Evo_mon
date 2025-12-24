@@ -10,6 +10,11 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Optional
 from evohomeasync2 import EvohomeClient
+try:
+    from evohomeasync2 import EvohomeClientOld
+    USE_OLD_CLIENT = True
+except ImportError:
+    USE_OLD_CLIENT = False
 
 import config
 
@@ -60,12 +65,19 @@ class EvohomePoller:
         self._client: Optional[EvohomeClient] = None
         self._last_login: Optional[datetime] = None
     
-    async def _ensure_client(self) -> EvohomeClient:
+    async def _ensure_client(self):
         """Ensure we have an authenticated client."""
         if self._client is None:
             logger.info("Creating new Evohome client connection")
-            self._client = EvohomeClient(self.username, self.password)
-            await self._client.login()
+            if USE_OLD_CLIENT:
+                logger.info("Using EvohomeClientOld (compatible with username/password)")
+                self._client = EvohomeClientOld(self.username, self.password)
+                # Old client uses update() instead of login()
+                await self._client.update()
+            else:
+                logger.info("Using EvohomeClient (new API)")
+                self._client = EvohomeClient(self.username, self.password)
+                await self._client.login()
             self._last_login = datetime.now()
         return self._client
     
@@ -78,21 +90,36 @@ class EvohomePoller:
         """
         try:
             client = await self._ensure_client()
-            
+
             # Refresh the status
-            await client.locations[0].refresh_status()
-            
+            if USE_OLD_CLIENT:
+                # Old client refreshes all data with update()
+                await client.update()
+            else:
+                # New client refreshes specific location
+                await client.locations[0].refresh_status()
+
             location = client.locations[0]
-            tcs = location._gateways[0]._control_systems[0]
-            
-            # Extract system mode
-            system_mode = tcs.system_mode
+
+            # Old vs new client API differences
+            if USE_OLD_CLIENT:
+                tcs = location.gateways[0].systems[0]
+                system_mode = tcs.mode
+            else:
+                tcs = location._gateways[0]._control_systems[0]
+                system_mode = tcs.system_mode
             
             # Extract zone states
             zones = {}
             for zone in tcs.zones:
-                zone_id = zone.zone_id
-                
+                # Old vs new client API differences
+                if USE_OLD_CLIENT:
+                    zone_id = zone.id
+                    setpoint_mode = zone.mode
+                else:
+                    zone_id = zone.zone_id
+                    setpoint_mode = zone.setpoint_mode
+
                 # Parse the until time if present
                 until = None
                 if hasattr(zone, 'setpoint_status') and zone.setpoint_status:
@@ -102,13 +129,13 @@ class EvohomePoller:
                             until = datetime.fromisoformat(until_str.replace('Z', '+00:00'))
                         except (ValueError, AttributeError):
                             pass
-                
+
                 zone_state = ZoneState(
                     zone_id=zone_id,
                     name=zone.name,
                     current_temp=zone.temperature,
                     target_temp=zone.target_heat_temperature,
-                    setpoint_mode=zone.setpoint_mode,
+                    setpoint_mode=setpoint_mode,
                     until=until,
                     is_available=zone.temperature is not None,
                     active_faults=list(zone.active_faults) if hasattr(zone, 'active_faults') else [],
@@ -118,7 +145,7 @@ class EvohomePoller:
                 
                 logger.debug(
                     f"Zone {zone.name}: {zone.temperature}°C -> {zone.target_heat_temperature}°C "
-                    f"({zone.setpoint_mode})"
+                    f"({setpoint_mode})"
                 )
             
             state = SystemState(
@@ -140,19 +167,30 @@ class EvohomePoller:
     async def get_zone_schedule(self, zone_id: str) -> dict:
         """
         Get the schedule for a specific zone.
-        
+
         Useful for determining what the zone *should* be doing.
         """
         try:
             client = await self._ensure_client()
             location = client.locations[0]
-            tcs = location._gateways[0]._control_systems[0]
-            
+
+            # Old vs new client API differences
+            if USE_OLD_CLIENT:
+                tcs = location.gateways[0].systems[0]
+            else:
+                tcs = location._gateways[0]._control_systems[0]
+
             for zone in tcs.zones:
-                if zone.zone_id == zone_id:
+                # Check zone ID based on client type
+                if USE_OLD_CLIENT:
+                    zone_match = (zone.id == zone_id)
+                else:
+                    zone_match = (zone.zone_id == zone_id)
+
+                if zone_match:
                     schedule = await zone.get_schedule()
                     return schedule
-            
+
             return {}
         except Exception as e:
             logger.error(f"Error fetching schedule for zone {zone_id}: {e}")
@@ -161,20 +199,31 @@ class EvohomePoller:
     async def cancel_override(self, zone_id: str) -> bool:
         """
         Cancel an override on a zone, returning it to schedule.
-        
+
         This is a remediation action, not typically called automatically.
         """
         try:
             client = await self._ensure_client()
             location = client.locations[0]
-            tcs = location._gateways[0]._control_systems[0]
-            
+
+            # Old vs new client API differences
+            if USE_OLD_CLIENT:
+                tcs = location.gateways[0].systems[0]
+            else:
+                tcs = location._gateways[0]._control_systems[0]
+
             for zone in tcs.zones:
-                if zone.zone_id == zone_id:
-                    await zone.reset_mode()
+                # Check zone ID based on client type
+                if USE_OLD_CLIENT:
+                    zone_match = (zone.id == zone_id)
+                else:
+                    zone_match = (zone.zone_id == zone_id)
+
+                if zone_match:
+                    await zone.reset()
                     logger.info(f"Cancelled override on zone {zone.name}")
                     return True
-            
+
             return False
         except Exception as e:
             logger.error(f"Error cancelling override for zone {zone_id}: {e}")
