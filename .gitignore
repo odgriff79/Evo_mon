@@ -8,3 +8,4 @@ __pycache__/
 
 # Data directory (optional - remove this line if you want to backup data)
 data/
+VM_CREDENTIALS.txt
