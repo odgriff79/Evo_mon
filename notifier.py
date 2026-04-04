@@ -16,24 +16,32 @@ logger = logging.getLogger(__name__)
 
 class TelegramNotifier:
     """Sends notifications via Telegram Bot API."""
-    
+
     def __init__(
-        self, 
-        bot_token: str = None, 
-        chat_id: str = None,
+        self,
+        bot_token: str = None,
+        chat_ids: list = None,
         cooldown_seconds: int = None
     ):
         self.bot_token = bot_token or config.TELEGRAM_BOT_TOKEN
-        self.chat_id = chat_id or config.TELEGRAM_CHAT_ID
+        # Support both list and single chat_id for backwards compatibility
+        if chat_ids:
+            self.chat_ids = chat_ids if isinstance(chat_ids, list) else [chat_ids]
+        elif hasattr(config, 'TELEGRAM_CHAT_IDS'):
+            self.chat_ids = config.TELEGRAM_CHAT_IDS
+        elif config.TELEGRAM_CHAT_ID:
+            self.chat_ids = [config.TELEGRAM_CHAT_ID]
+        else:
+            self.chat_ids = []
         self.cooldown_seconds = cooldown_seconds or config.ALERT_COOLDOWN_SECONDS
         self._last_alert_times: dict[str, datetime] = {}  # zone_id -> last alert time
-        
-        if not self.bot_token or not self.chat_id:
+
+        if not self.bot_token or not self.chat_ids:
             logger.warning("Telegram not configured - notifications disabled")
-    
+
     @property
     def is_configured(self) -> bool:
-        return bool(self.bot_token and self.chat_id)
+        return bool(self.bot_token and self.chat_ids)
     
     def _is_in_quiet_hours(self) -> bool:
         """Check if we're in quiet hours."""
@@ -95,28 +103,31 @@ class TelegramNotifier:
             logger.info(f"Zone {zone_id} in cooldown, suppressing notification")
             return False
         
-        try:
-            url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
-            payload = {
-                "chat_id": self.chat_id,
-                "text": message,
-                "parse_mode": "HTML",
-                "disable_notification": silent
-            }
-            
-            response = requests.post(url, json=payload, timeout=10)
-            response.raise_for_status()
-            
-            # Update cooldown tracker
-            if zone_id:
-                self._last_alert_times[zone_id] = datetime.now()
-            
-            logger.info(f"Telegram notification sent successfully")
-            return True
-            
-        except requests.RequestException as e:
-            logger.error(f"Failed to send Telegram notification: {e}")
-            return False
+        url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
+        success = False
+
+        for chat_id in self.chat_ids:
+            try:
+                payload = {
+                    "chat_id": chat_id,
+                    "text": message,
+                    "parse_mode": "HTML",
+                    "disable_notification": silent
+                }
+
+                response = requests.post(url, json=payload, timeout=10)
+                response.raise_for_status()
+                logger.info(f"Telegram notification sent to {chat_id}")
+                success = True
+
+            except requests.RequestException as e:
+                logger.error(f"Failed to send Telegram notification to {chat_id}: {e}")
+
+        # Update cooldown tracker
+        if success and zone_id:
+            self._last_alert_times[zone_id] = datetime.now()
+
+        return success
     
     def send_startup_message(self) -> bool:
         """Send a startup notification."""
